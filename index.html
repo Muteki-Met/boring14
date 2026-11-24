@@ -257,6 +257,12 @@ dialog h3{margin:0 0 14px;font-size:20px}
 
 .countdown{text-align:center;padding-top:30px}
 .countdown .big{font-size:150px;line-height:.9}
+/* screenshot statici per il README */
+.still,.still *{transition:none!important;animation:none!important}
+.still .orbit i{transform:rotate(var(--a)) translateY(-96px)}
+.still .stack div{transform:none}
+.still .lock path,.still .lock rect{stroke-dashoffset:0}
+.still .phone .tile{opacity:1}
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 12px);transform:translate(-50%,-160%);background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:30px;font-weight:700;transition:transform .5s var(--ease);z-index:10;max-width:90vw;text-align:center}
 #toast.show{transform:translate(-50%,0)}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:9}
@@ -282,6 +288,6 @@ dialog h3{margin:0 0 14px;font-size:20px}
     <div class="dlg-row"><button value="ok" id="cfOk" style="background:var(--warn);color:var(--paper)"></button><button value="cancel" id="cfNo"></button></div>
   </form>
 </dialog>
-<script type="module" src="app.js?v=13"></script>
+<script type="module" src="app.js?v=14"></script>
 </body>
 </html>

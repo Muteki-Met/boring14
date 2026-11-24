@@ -1,12 +1,26 @@
-import { TOTAL, CIRCUIT_DAYS, WAIST_DAYS, HABITS, habitsFor, dayOf, daysUntil, stepTarget, hueOf, dayColor, DAY_COLORS, CIRCUIT_REPS } from './challenge.js?v=13';
-import { STR, LANGS, detectLang } from './i18n.js?v=13';
-import { figure } from './figures.js?v=13';
+import { TOTAL, CIRCUIT_DAYS, WAIST_DAYS, HABITS, habitsFor, dayOf, daysUntil, stepTarget, hueOf, dayColor, DAY_COLORS, CIRCUIT_REPS } from './challenge.js?v=14';
+import { STR, LANGS, detectLang } from './i18n.js?v=14';
+import { figure } from './figures.js?v=14';
 
 // ── Dati: solo localStorage di questo telefono ─────────────
 const KEY = 'boring14';
 const blank = () => ({ start: null, height: null, lang: detectLang(), done: {}, steps: {}, waist: {} });
 let S;
 try { S = { ...blank(), ...JSON.parse(localStorage.getItem(KEY)) }; } catch { S = blank(); }
+// Demo (#demo, #demo&tab=food&lang=it&tour): dati di esempio solo in memoria, mai salvati.
+const DEMO = new URLSearchParams(location.hash.slice(1));
+const isDemo = DEMO.has('demo');
+if (isDemo) {
+  const st = new Date(); st.setHours(0, 0, 0, 0); st.setDate(st.getDate() - 6);
+  S = { ...blank(), lang: DEMO.get('lang') || detectLang(), height: 178, start: DEMO.has('tour') ? null : st.toISOString(),
+    done: { 1: ['drinks', 'walk', 'wake', 'kitchen'], 2: ['drinks', 'walk', 'wake', 'kitchen'], 3: ['drinks', 'plate', 'walk', 'circuit', 'wake', 'kitchen'],
+      4: ['drinks', 'plate', 'walk', 'wake', 'kitchen'], 5: ['drinks', 'plate', 'walk', 'circuit', 'wake', 'kitchen'], 6: ['drinks', 'plate', 'walk', 'wake', 'kitchen'], 7: ['drinks', 'walk', 'wake'] },
+    steps: { 1: 5200, 2: 6100, 3: 7900, 4: 8300, 5: 7650, 6: 8800, 7: 6420 }, waist: { 1: 96, 7: 94.5 } };
+}
+// Per gli screenshot del README (#demo&shot=3): niente animazioni, pagina ingrandita.
+const still = isDemo && DEMO.has('shot');
+if (still) { document.documentElement.classList.add('still'); document.documentElement.style.zoom = DEMO.get('shot') || 3; }
+const save = () => { if (!isDemo) localStorage.setItem(KEY, JSON.stringify(S)); };
 navigator.storage?.persist?.(); // chiede al browser di non cancellare i dati
 
 const L = () => STR[S.lang] || STR.en;
@@ -37,7 +51,7 @@ let installPrompt = null;
 addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; if (!S.start || tab === 'install') render(); });
 
 // ── Stato UI ───────────────────────────────────────────────
-let tab = 'today', viewDay = null, ticks = new Set(), round = 1, rest = 0, timer = null, lastTab = null, popId = null, openEx = 0;
+let tab = (isDemo && DEMO.get('tab')) || 'today', viewDay = null, ticks = new Set(), round = 1, rest = 0, timer = null, lastTab = null, popId = null, openEx = 0;
 let slide = 0, startChoice = 'today', pickDate = '', heightVal = S.height ?? '';
 const anim = {};
 const $ = (id) => document.getElementById(id);
@@ -61,7 +75,7 @@ const setHue = (d) => { const [l, c, h] = DAY_COLORS[d - 1], s = document.docume
 function commit(d, fn) {
   const before = S.start ? progress(d) : 0;
   fn();
-  localStorage.setItem(KEY, JSON.stringify(S));
+  save();
   render();
   if (S.start && before < 1 && progress(d) >= 1) { confetti(); toast(t('dayDone')); }
 }
@@ -108,7 +122,7 @@ const ring = (key, v, size, stroke, inner) => {
     <circle data-to="${c * (1 - v)}" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" style="stroke:var(--on-day);transition:stroke-dashoffset 1s var(--ease)" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - from)}"/></svg>
     <div style="position:relative;text-align:center">${inner}</div></div>`;
 };
-const counter = (key, n, suffix = '') => { const from = anim[key] ?? 0; anim[key] = n; return `<span data-count="${n}" data-from="${from}" data-suffix="${suffix}">${fmt(from)}${suffix}</span>`; };
+const counter = (key, n, suffix = '') => { const from = still ? n : anim[key] ?? 0; anim[key] = n; return `<span data-count="${n}" data-from="${from}" data-suffix="${suffix}">${fmt(from)}${suffix}</span>`; };
 
 function afterRender() {
   requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -427,7 +441,7 @@ document.addEventListener('click', async (ev) => {
   const id = b.dataset.id, td = S.start ? today() : 1, d = viewDay ?? td;
   switch (b.dataset.act) {
     case 'setlang': return commit(today(), () => { S.lang = id; });
-    case 'lang': S.lang = id; localStorage.setItem(KEY, JSON.stringify(S)); return render();
+    case 'lang': S.lang = id; save(); return render();
     case 'next': return goSlide(slide + 1);
     case 'choose': startChoice = id; return renderTour();
     case 'install':
@@ -477,7 +491,7 @@ document.addEventListener('click', async (ev) => {
         if (c.returnValue !== 'ok') return;
         const keep = { height: S.height, lang: S.lang };
         S = { ...blank(), ...keep }; heightVal = S.height ?? ''; slide = 0; ticks.clear(); round = 1; tab = 'today';
-        localStorage.setItem(KEY, JSON.stringify(S)); render();
+        save(); render();
       }, { once: true });
     }
   }
