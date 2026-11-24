@@ -37,8 +37,26 @@ export function stepTarget(day, steps) {
   return base >= 10000 ? base : Math.min(base + bonus, 10000);
 }
 
-/** Tinta OKLCH del giorno: i 14 giorni percorrono la ruota dei colori. */
-export const hueOf = (day) => Math.round(25 + (day - 1) * (300 / (TOTAL - 1)));
+/** Palette dei 14 giorni, scelta a mano: [luminosità, intensità, tinta] OKLCH. */
+export const DAY_COLORS = [
+  [0.74, 0.17, 30],  // corallo
+  [0.78, 0.16, 55],  // mandarino
+  [0.87, 0.16, 92],  // girasole
+  [0.86, 0.18, 130], // lime
+  [0.82, 0.14, 165], // menta
+  [0.81, 0.12, 205], // acqua
+  [0.74, 0.14, 245], // cielo
+  [0.73, 0.15, 278], // pervinca
+  [0.71, 0.18, 302], // viola
+  [0.75, 0.18, 328], // orchidea
+  [0.77, 0.16, 352], // rosa
+  [0.72, 0.18, 15],  // rosso rosa
+  [0.83, 0.11, 48],  // pesca
+  [0.85, 0.15, 85],  // oro, traguardo
+];
+export const hueOf = (day) => DAY_COLORS[day - 1][2];
+/** Colore del giorno; dl scurisce (negativo) o schiarisce. */
+export const dayColor = (day, dl = 0) => { const [l, ch, h] = DAY_COLORS[day - 1]; return `oklch(${(l + dl).toFixed(3)} ${ch} ${h})`; };
 
 export const CIRCUIT_REPS = ['12–20', '6–15', '8–12', '10–15', '20–40 s'];
 

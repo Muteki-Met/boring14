@@ -1,6 +1,6 @@
 // node test.mjs
 import assert from 'node:assert/strict';
-import { dayOf, stepTarget, habitsFor, daysUntil, hueOf } from './challenge.js';
+import { dayOf, stepTarget, habitsFor, daysUntil, hueOf, dayColor, DAY_COLORS } from './challenge.js';
 import { STR } from './i18n.js';
 
 const s = new Date(2026, 0, 1, 23);
@@ -22,7 +22,7 @@ const ids = (d) => habitsFor(d).map((h) => h.id);
 assert.ok(ids(1).includes('waist') && !ids(1).includes('plate'));
 assert.ok(ids(3).includes('plate') && ids(3).includes('circuit'));
 assert.ok(!ids(4).includes('circuit'));
-assert.equal(hueOf(1), 25); assert.equal(hueOf(14), 325);
+assert.equal(hueOf(1), 30); assert.equal(DAY_COLORS.length, 14); assert.match(dayColor(3, -0.2), /^oklch\(0\.670 /);
 
 // ogni lingua ha le stesse chiavi dell'inglese
 for (const [l, o] of Object.entries(STR)) for (const k of Object.keys(STR.en)) assert.ok(k in o, `${l} manca ${k}`);

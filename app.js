@@ -1,4 +1,4 @@
-import { TOTAL, CIRCUIT_DAYS, WAIST_DAYS, HABITS, habitsFor, dayOf, daysUntil, stepTarget, hueOf, CIRCUIT_REPS } from './challenge.js';
+import { TOTAL, CIRCUIT_DAYS, WAIST_DAYS, HABITS, habitsFor, dayOf, daysUntil, stepTarget, hueOf, dayColor, DAY_COLORS, CIRCUIT_REPS } from './challenge.js';
 import { STR, LANGS, detectLang } from './i18n.js';
 import { figure } from './figures.js';
 
@@ -18,7 +18,6 @@ const today = () => dayOf(startDate(), new Date());
 const waiting = () => daysUntil(startDate(), new Date());
 const dateOf = (n) => { const d = startDate(); d.setDate(d.getDate() + n - 1); return d; };
 const midnight = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const dstr = (d, o) => d.toLocaleDateString(L().locale, o);
 const isDone = (d, id) => {
   if (id === 'steps') { const s = S.steps[d], g = stepTarget(d, S.steps); return s != null && (g == null || s >= g); }
@@ -42,57 +41,21 @@ let tab = 'today', viewDay = null, ticks = new Set(), round = 1, rest = 0, timer
 let slide = 0, startChoice = 'today', pickDate = '', heightVal = S.height ?? '';
 const anim = {};
 const $ = (id) => document.getElementById(id);
-
-// ── Icone e colori ─────────────────────────────────────────
 const I = {
   home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
-  food: '<path d="M7 3v7a2 2 0 0 0 2 2v9M11 3v7a2 2 0 0 1-2 2M7 3v4M17 21V3c-2 1.5-3 4-3 7v3h3"/>',
   dumbbell: '<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>',
   ruler: '<rect x="2.5" y="8" width="19" height="8" rx="2"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/>',
   chart: '<path d="M5 20v-7M10 20V5M15 20v-10M20 20v-4"/>',
   watch: '<rect x="6.5" y="6" width="11" height="12" rx="3.5"/><path d="M9 6l.8-3h4.4L15 6M9 18l.8 3h4.4l.8-3M12 10v2.5l1.5 1"/>',
+  food: '<path d="M7 3v7a2 2 0 0 0 2 2v9M11 3v7a2 2 0 0 1-2 2M7 3v4M17 21V3c-2 1.5-3 4-3 7v3h3"/>',
   chev: '<path d="m9 6 6 6-6 6"/>', back: '<path d="m15 6-6 6 6 6"/>',
   sync: '<path d="M20 11a8 8 0 0 0-14.9-3M4 13a8 8 0 0 0 14.9 3M4 4v4h4M20 20v-4h-4"/>',
+  pen: '<path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/>',
   share: '<path d="M12 3v12M8 7l4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>',
-  drop: '<path d="M12 3s6.5 6.6 6.5 11.2a6.5 6.5 0 0 1-13 0C5.5 9.6 12 3 12 3z"/>',
-  plate: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/>',
-  walk: '<circle cx="13.5" cy="4" r="1.8"/><path d="m9 21 2.6-6 2.4 2.2V21M11.6 15 10.5 9.5l3-2 2.4 3 3 1M10.5 9.5 7 12"/>',
-  shoe: '<path d="M3 16.5V9l4 1 3-3 3 4 6 2a2.5 2.5 0 0 1 2 2.5v1z"/><path d="M3 19.5h18"/>',
-  alarm: '<circle cx="12" cy="13" r="7.5"/><path d="M12 9.5V13l2.5 1.8M5 3.5 2.5 6M19 3.5 21.5 6"/>',
-  moon: '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4 6.8 6.8 0 0 0 20 14.5z"/>',
-  check: '<circle cx="12" cy="12" r="9"/><path d="m8 12.5 3 3 5-6"/>',
-  flame: '<path d="M12 21.5c4 0 7-2.6 7-6.6 0-3-2-5-3.6-7-.4 2-1.5 3-3 3 .6-3-.9-6-3.4-8.4 0 4.2-4 6.2-4 11.2 0 4.6 3 7.8 7 7.8z"/>',
-  bulb: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
-  bag: '<path d="M5 8h14l-1 12.5H6zM9 8V6a3 3 0 0 1 6 0v2"/>',
-  warn: '<path d="M12 4 2.5 20h19zM12 10v4.5M12 17.5v.5"/>',
 };
 const icon = (n) => `<svg class="i" viewBox="0 0 24 24">${I[n]}</svg>`;
-const C = { blue: 'oklch(0.62 0.17 250)', green: 'oklch(0.64 0.17 145)', orange: 'oklch(0.69 0.19 50)', red: 'oklch(0.62 0.21 25)', purple: 'oklch(0.57 0.22 300)', amber: 'oklch(0.74 0.16 75)', indigo: 'oklch(0.55 0.19 275)', pink: 'oklch(0.64 0.21 355)' };
-const HAB = { drinks: ['drop', C.blue], plate: ['plate', C.green], walk: ['walk', C.orange], steps: ['shoe', C.red], circuit: ['dumbbell', C.purple], wake: ['alarm', C.amber], kitchen: ['moon', C.indigo], waist: ['ruler', C.pink] };
-const PAL = [C.orange, C.blue, C.green, C.purple, C.pink];
-const tile = (ic, c, extra = '') => `<span class="tile ${extra}" style="--c:${c}"><svg viewBox="0 0 24 24">${I[ic]}</svg></span>`;
 const check = '<span class="ck"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>';
-const setHue = (d) => document.documentElement.style.setProperty('--h', hueOf(d));
-
-// Mini-grafico a onda con riempimento sfumato e puntino finale.
-let sparkId = 0;
-function spark(vals, c) {
-  const v = vals.length > 1 ? vals : [vals[0] ?? 0, vals[0] ?? 0];
-  const lo = Math.min(...v), hi = Math.max(...v), W = 112, H = 58;
-  const pts = v.map((y, i) => [4 + (i * (W - 10)) / (v.length - 1), hi === lo ? H * .55 : 50 - ((y - lo) / (hi - lo)) * 40]);
-  let d = `M${pts[0][0]},${pts[0][1]}`;
-  for (let i = 1; i < pts.length; i++) {
-    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], m = (x1 - x0) / 2;
-    d += ` C${x0 + m},${y0} ${x1 - m},${y1} ${x1},${y1}`;
-  }
-  const [lx, ly] = pts[pts.length - 1], id = `sg${++sparkId}`;
-  return `<svg class="spark" viewBox="0 0 ${W} ${H}" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity=".22"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></linearGradient></defs>
-    <path class="ar" d="${d} L${lx},${H} L${pts[0][0]},${H} Z" fill="url(#${id})"/>
-    <path class="ln" d="${d}" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle class="ar" cx="${lx}" cy="${ly}" r="3.5" fill="${c}" stroke="oklch(0.995 0.002 270)" stroke-width="2.5"/></svg>`;
-}
-const metric = (ic, c, lbl, val, unit, sp, extra = '') => `<div class="metric">${tile(ic, c)}
-  <div class="grow"><div class="lbl">${lbl}</div><div class="num val">${val}${unit ? `<small>${unit}</small>` : ''}</div>${extra}</div>${sp || ''}</div>`;
+const setHue = (d) => { const [l, c, h] = DAY_COLORS[d - 1], s = document.documentElement.style; s.setProperty('--h', h); s.setProperty('--dl', l); s.setProperty('--dc', c); };
 
 function commit(d, fn) {
   const before = S.start ? progress(d) : 0;
@@ -110,10 +73,9 @@ function toast(msg) {
 function confetti() {
   const c = $('confetti'), x = c.getContext('2d'), dpr = devicePixelRatio || 1;
   c.width = innerWidth * dpr; c.height = innerHeight * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const cols = Object.values(C);
   const P = Array.from({ length: 150 }, (_, i) => ({
     x: innerWidth / 2, y: innerHeight / 3, vx: (Math.random() - .5) * 14, vy: Math.random() * -14 - 4,
-    r: Math.random() * 7 + 5, a: Math.random() * 6, va: (Math.random() - .5) * .4, c: cols[i % cols.length],
+    r: Math.random() * 7 + 5, a: Math.random() * 6, va: (Math.random() - .5) * .4, c: dayColor(1 + (i % TOTAL)),
   }));
   let f = 0;
   (function tick() {
@@ -141,8 +103,8 @@ const ring = (key, v, size, stroke, inner) => {
   const r = (size - stroke) / 2, c = 2 * Math.PI * r, from = anim[key] ?? 0; anim[key] = v;
   return `<div style="position:relative;width:${size}px;height:${size}px;display:grid;place-items:center;flex:none">
     <svg viewBox="0 0 ${size} ${size}" style="position:absolute;inset:0;transform:rotate(-90deg)">
-    <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" style="stroke:var(--line)" stroke-width="${stroke}"/>
-    <circle data-to="${c * (1 - v)}" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" style="stroke:var(--accent);transition:stroke-dashoffset 1s var(--ease)" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - from)}"/></svg>
+    <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" style="stroke:oklch(1 0 0 / .45)" stroke-width="${stroke}"/>
+    <circle data-to="${c * (1 - v)}" cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" style="stroke:var(--on-day);transition:stroke-dashoffset 1s var(--ease)" stroke-width="${stroke}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - from)}"/></svg>
     <div style="position:relative;text-align:center">${inner}</div></div>`;
 };
 const counter = (key, n, suffix = '') => { const from = anim[key] ?? 0; anim[key] = n; return `<span data-count="${n}" data-from="${from}" data-suffix="${suffix}">${fmt(from)}${suffix}</span>`; };
@@ -151,9 +113,8 @@ function afterRender() {
   requestAnimationFrame(() => requestAnimationFrame(() => {
     document.querySelectorAll('[data-to]').forEach((el) => { el.style.strokeDashoffset = el.dataset.to; });
     document.querySelectorAll('[data-h]').forEach((el) => { el.style.height = el.dataset.h; });
-    document.querySelectorAll('[data-b]').forEach((el) => { el.style.bottom = el.dataset.b; });
     document.querySelectorAll('[data-w]').forEach((el) => { el.style.width = el.dataset.w; });
-    document.querySelectorAll('[data-p]').forEach((el) => { el.style.setProperty('--p', el.dataset.p); });
+    document.querySelectorAll('[data-b]').forEach((el) => { el.style.bottom = el.dataset.b; });
     document.querySelectorAll('[data-count]').forEach((el) => {
       const to = +el.dataset.count, from = +el.dataset.from, s = el.dataset.suffix, t0 = performance.now();
       if (to === from) return;
@@ -167,35 +128,35 @@ function afterRender() {
 }
 
 // ── Tour iniziale ──────────────────────────────────────────
-function installBlock() {
+function installBlock(onDay) {
   if (standalone()) return `<p class="lead">${t('installed')}</p>`;
   if (isIOS) return `<ol class="steps-list">${L().iosSteps.map((s) => `<li><span>${s}</span></li>`).join('')}</ol>
-    ${isIOSSafari ? '' : `<p class="small muted">${t('iosSafari')}</p>`}`;
-  return `${installPrompt ? `<button class="btn" data-act="install" style="margin-top:16px">${t('installBtn')}</button>` : ''}
+    ${isIOSSafari ? '' : `<p class="small" style="opacity:.8">${t('iosSafari')}</p>`}`;
+  return `${installPrompt ? `<button class="btn" data-act="install" style="margin-top:16px;${onDay ? '' : 'background:var(--ink);color:var(--paper)'}">${t('installBtn')}</button>` : ''}
     <ol class="steps-list">${L().andSteps.map((s) => `<li><span>${s}</span></li>`).join('')}</ol>`;
 }
-const phoneArt = () => `<div class="art"><div class="phone">${tile('check', 'var(--accent)')}<div class="bar"><span></span><span class="share">${icon('share')}</span><span></span></div></div></div>`;
 
 const tourSlides = () => {
   const s = [
-    `<div class="art"><div class="orbit">${Array.from({ length: TOTAL }, (_, i) => `<i style="--i:${i};--a:${i * (360 / TOTAL)}deg;--dh:${hueOf(i + 1)}"></i>`).join('')}<span class="num">14</span></div></div>
+    `<div class="art"><div class="orbit">${Array.from({ length: TOTAL }, (_, i) => `<i style="--i:${i};--a:${i * (360 / TOTAL)}deg;--dcol:${dayColor(i + 1)}"></i>`).join('')}<span class="num">14</span></div></div>
      <h1>${L().t1[0]}</h1><p class="lead">${L().t1[1]}</p>`,
-    `<div class="art"><div class="stack">${HABITS.filter((h) => h.id !== 'waist').map((h, i) => `<div style="--i:${i}">${tile(HAB[h.id][0], HAB[h.id][1])}${L().habits[h.id][0]}</div>`).join('')}</div></div>
+    `<div class="art"><div class="stack">${HABITS.filter((h) => h.id !== 'waist').map((h, i) => `<div style="--i:${i}"><span>${h.emoji}</span>${L().habits[h.id][0]}</div>`).join('')}</div></div>
      <h1>${L().t2[0]}</h1><p class="lead">${L().t2[1]}</p>`,
     `<div class="art"><svg class="lock" width="150" height="170" viewBox="0 0 150 170"><path d="M40 75V52a35 35 0 0 1 70 0v23"/><rect x="18" y="75" width="114" height="84" rx="22"/><path d="M75 108v20"/></svg></div>
      <h1>${L().t3[0]}</h1><p class="lead">${L().t3[1]}</p>`,
   ];
-  if (!standalone()) s.push(`${phoneArt()}<h1>${L().t4[0]}</h1><p class="lead">${L().t4[1]}</p>${installBlock()}`);
+  if (!standalone()) s.push(`<div class="art" style="height:240px"><div class="phone"><span class="tile"></span><div class="bar"><span></span><span class="share">${icon('share')}</span><span></span></div></div></div>
+     <h1>${L().t4[0]}</h1><p class="lead">${L().t4[1]}</p>${installBlock(true)}`);
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
   s.push(`<h1>${L().t5[0]}</h1>
     <p class="lead" style="margin-bottom:18px">${L().t5[1]}</p>
-    <div class="eyebrow">${t('whenStart')}</div>
+    <div class="eyebrow" style="color:inherit;opacity:.7">${t('whenStart')}</div>
     <div class="opts">${['today', 'tomorrow', 'pick'].map((o) => `<button class="opt ${startChoice === o ? 'on' : ''}" data-act="choose" data-id="${o}">${t('start' + o[0].toUpperCase() + o.slice(1))}</button>`).join('')}</div>
-    ${startChoice === 'pick' ? `<input type="date" id="pick" value="${pickDate}" min="${ymd(tomorrow)}">` : ''}
+    ${startChoice === 'pick' ? `<input type="date" id="pick" value="${pickDate}" min="${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}">` : ''}
     <div style="height:10px"></div>
     <input id="h" inputmode="decimal" placeholder="${t('heightPh')}" value="${heightVal}">
     <button class="btn" id="go" data-act="begin" style="margin-top:14px">${startChoice === 'today' ? t('begin') : t('ready')}</button>
-    <p class="small muted" style="margin-top:14px">${t('medical')}</p>`);
+    <p class="small" style="opacity:.7;margin-top:14px">${t('medical')}</p>`);
   return s;
 };
 
@@ -223,7 +184,7 @@ function validateTour() {
 function goSlide(i) {
   const n = $('slides').children.length;
   if (i < 0 || i >= n) return;
-  if ((slide === n - 1) !== (i === n - 1)) { slide = i; return renderTour(); }
+  if ((slide === n - 1) !== (i === n - 1)) { slide = i; return renderTour(); } // il pulsante Avanti appare/sparisce
   slide = i;
   setHue(1 + slide * 3);
   $('slides').style.transform = `translateX(${-slide * 100}%)`;
@@ -238,45 +199,49 @@ function countdownPage() {
   return `<div class="countdown">
     <div class="eyebrow">${t('startsIn')}</div>
     <div class="num big">${n}</div>
-    <div style="font-size:20px;font-weight:800">${n === 1 ? t('dayWord') : t('daysWord')}</div>
+    <div style="font-size:20px;font-weight:700">${n === 1 ? t('dayWord') : t('daysWord')}</div>
     <p class="muted">${t('startsOn', { d: dstr(startDate(), { weekday: 'long', day: 'numeric', month: 'long' }) })}</p></div>
   <div class="section"><h2>${t('getReady')}</h2></div>
-  <div class="card list">${L().readyList.map((r, i) => `<div class="row">${tile(['ruler', 'drop', 'plate', 'alarm'][i], PAL[i])}<span class="grow">${r}</span></div>`).join('')}</div>
+  <div class="panel">${L().readyList.map((r, i) => `<div class="row"><span class="num" style="color:var(--strong)">${i + 1}</span><span class="grow">${r}</span></div>`).join('')}</div>
+  <div style="height:16px"></div>
   <button class="btn ghost" data-act="startnow">${t('startNow')}</button>
-  ${standalone() ? '' : `<div class="section"><h2>${t('install')}</h2></div><div class="card" style="padding:16px">${installBlock()}</div>`}`;
+  ${standalone() ? '' : `<div class="section"><h2>${t('install')}</h2></div>${installBlock(false)}`}`;
 }
 
 function todayPage() {
   const td = today(), d = viewDay ?? td, p = progress(d), hs = habitsFor(d);
   const goal = stepTarget(d, S.steps), st = S.steps[d] ?? 0, doneN = hs.filter((h) => isDone(d, h.id)).length;
   setHue(d);
-  const hr = new Date().getHours();
   const cheer = L().cheer[p >= 1 ? 3 : p >= .6 ? 2 : p > 0 ? 1 : 0];
-  const days = Array.from({ length: d }, (_, i) => i + 1);
-  const strip = Array.from({ length: TOTAL }, (_, i) => {
-    const n = i + 1, full = n <= td && progress(n) >= 1;
-    return `<button class="${n === d ? 'sel' : ''} ${full ? 'full' : ''}" data-act="day" data-id="${n}" ${n > td ? 'disabled' : ''} aria-label="${t('day')} ${n}">
-      <small>${dstr(dateOf(n), { weekday: 'narrow' })}</small>${dateOf(n).getDate()}<i></i></button>`;
+  const journey = Array.from({ length: TOTAL }, (_, i) => {
+    const n = i + 1, pp = n <= td ? progress(n) : 0;
+    return `<button class="${n === d ? 'sel' : ''} ${n > td ? 'future' : ''}" data-act="day" data-id="${n}" ${n > td ? 'disabled' : ''} style="--dcol:${dayColor(n, -0.15)}" aria-label="${t('day')} ${n}"><i data-h="${pp * 100}%" style="height:0"></i></button>`;
   }).join('');
   const sub = (h) => h.id === 'waist' && S.waist[d] != null ? `${num(S.waist[d])} cm` : L().habits[h.id][1];
-  const from = anim.orb ?? 0; anim.orb = p;
-  return `<div class="bar-top"><span class="brand">Boring 14</span><span class="grow"></span>
-      ${isIOS ? `<button class="icon-btn" data-act="sync" aria-label="${t('sync')}">${icon('watch')}</button>` : ''}</div>
-    <div class="greet"><span class="muted">${L().hello[hr < 12 ? 0 : hr < 18 ? 1 : 2]}</span><br><b>${t('day')} ${d}</b> <span class="muted">${t('of')} ${TOTAL}</span></div>
-    <div class="orb-wrap"><div class="orb ${p >= 1 ? 'full' : ''}" style="--p:${from}" data-p="${p}"></div>
-      <div class="orb-txt"><div class="num">${counter('pct', Math.round(p * 100), '%')}</div><div class="small">${t('doneOf', { a: doneN, b: hs.length })}</div></div></div>
-    <p class="cheer">${cheer}</p>
-    <div class="days">${strip}</div>
-    <button class="card" data-act="steps">${metric('shoe', C.red, `${t('steps')} · ${goal == null ? t('observe') : isDone(d, 'steps') ? t('goalHit') + ' ✓' : t('goal', { n: fmt(goal) })}`,
-      counter('st', st), t('stepsUnit'), spark(days.map((n) => S.steps[n] ?? 0), C.red))}
-      <div class="track"><i data-w="${goal ? Math.min(st / goal, 1) * 100 : st ? 100 : 0}%"></i></div></button>
-    ${isAndroid ? `<p class="small muted" style="margin:-2px 6px 12px">${t('androidNote')}</p>` : ''}
-    <div class="section"><h2>${t('plan')}</h2><span class="small muted">${doneN}/${hs.length}</span></div>
-    <div class="card list">${hs.filter((h) => h.id !== 'steps').map((h) => `
-      <button class="row ${isDone(d, h.id) ? 'done' : ''} ${popId === h.id ? 'pop' : ''}" data-act="habit" data-id="${h.id}">
-        ${tile(HAB[h.id][0], HAB[h.id][1])}<span class="grow"><div class="t">${L().habits[h.id][0]}</div><div class="s">${sub(h)}</div></span>${check}
+  return `<div class="bar-top">
+      <div class="grow"><div class="eyebrow">${d === td ? t('today') : t('past')}</div><div style="font-weight:650">${dstr(dateOf(d), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
+      ${isIOS ? `<button class="icon-btn" data-act="guide" aria-label="${t('watch')}">${icon('watch')}</button>` : ''}
+    </div>
+    <div class="hero">
+      <div class="eyebrow" style="color:inherit;opacity:.65">${t('day')}</div>
+      <div class="num big">${String(d).padStart(2, '0')}<small>/${TOTAL}</small></div>
+      <div class="meta"><div class="cheer">${cheer}</div>
+        <div class="count"><b class="num">${counter('pct', Math.round(p * 100), '%')}</b>${t('doneOf', { a: doneN, b: hs.length })}</div></div>
+      <div class="journey">${journey}</div>
+    </div>
+    <div class="steps">
+      <div><div class="eyebrow">${t('steps')} · ${goal == null ? t('observe') : isDone(d, 'steps') ? t('goalHit') + ' ✓' : t('goal', { n: fmt(goal) })}</div>
+        <div class="num val">${counter('st', st)} <small>${t('stepsUnit')}</small></div></div>
+      <div class="chips">${isIOS ? `<button class="chip solid" data-act="sync">${icon('sync')}${t('sync')}</button>` : ''}<button class="chip" data-act="steps">${icon('pen')}${t('manual')}</button></div>
+      <div class="track"><i data-w="${goal ? Math.min(st / goal, 1) * 100 : st ? 100 : 0}%"></i></div>
+      ${isAndroid ? `<p class="small muted" style="grid-column:1/-1;margin:6px 0 0">${t('androidNote')}</p>` : ''}
+    </div>
+    <div class="section"><h2>${t('plan')}</h2><span class="muted small">${doneN}/${hs.length}</span></div>
+    <div>${hs.filter((h) => h.id !== 'steps').map((h) => `
+      <button class="habit ${isDone(d, h.id) ? 'done' : ''} ${popId === h.id ? 'pop' : ''}" data-act="habit" data-id="${h.id}">
+        <span class="em">${h.emoji}</span><span class="grow"><div class="t">${L().habits[h.id][0]}</div><div class="s">${sub(h)}</div></span>${check}
       </button>`).join('')}</div>
-    <p class="note">“${L().tips[d - 1]}”</p>`;
+    <div class="note"><span class="q">“</span><div><div class="eyebrow">${t('note')}</div><p>${L().tips[d - 1]}</p></div></div>`;
 }
 
 function circuitPage() {
@@ -286,20 +251,20 @@ function circuitPage() {
   const p = ticks.size / (CIRCUIT_REPS.length * 3);
   setHue(td);
   return `<div class="bar-top"><div class="grow"><h1>${t('circuitT')}</h1><div class="muted">${isDay ? t('circuitToday') : next ? t('circuitNext', { n: next }) : t('circuitOver')}</div></div></div>
-  <div class="card" style="display:flex;align-items:center;gap:16px;padding:18px">
+  <div class="hero" style="display:flex;align-items:center;gap:16px">
     <div class="grow">${rest > 0
-      ? `<h1>${t('rest')}</h1><p class="muted" style="margin:6px 0 12px">${t('restSub')}</p><button class="chip solid" data-act="stoprest">${t('skip')}</button>`
-      : `<h1>${t('rounds')}</h1><p class="muted" style="margin:6px 0 0">${t('roundsSub')}</p>`}</div>
-    ${rest > 0 ? ring('rest', rest / 90, 96, 10, `<div class="num" style="font-size:28px">${rest}</div>`)
-      : ring('circ', p, 96, 10, `<div class="num" style="font-size:22px">${counter('cp', Math.round(p * 100), '%')}</div>`)}
+      ? `<h1>${t('rest')}</h1><p style="margin:6px 0 12px">${t('restSub')}</p><button class="chip solid" data-act="stoprest">${t('skip')}</button>`
+      : `<h1>${t('rounds')}</h1><p style="margin:6px 0 0">${t('roundsSub')}</p>`}</div>
+    ${rest > 0 ? ring('rest', rest / 90, 96, 9, `<div class="num" style="font-size:28px">${rest}</div>`)
+      : ring('circ', p, 96, 9, `<div class="num" style="font-size:22px">${counter('cp', Math.round(p * 100), '%')}</div>`)}
   </div>
   <div class="seg">${[1, 2, 3].map((r) => `<button class="${r === round ? 'on' : ''}" data-act="round" data-id="${r}">${t('round')} ${r} · ${inRound(r)}/5</button>`).join('')}</div>
-  ${L().circuit.map(([name, tip, how], i) => {
+  <div>${L().circuit.map(([name, tip, how], i) => {
     const id = `${round}:${i}`, q = encodeURIComponent(`${name} ${S.lang === 'it' ? 'esercizio corpo libero' : 'bodyweight exercise form'}`);
-    return `<div class="card ex ${openEx === i ? 'open' : ''}" style="--c:${PAL[i]}">
+    return `<div class="ex ${openEx === i ? 'open' : ''}">
       <div class="ex-head">
         <button class="ex-open" data-act="openex" data-id="${i}" aria-expanded="${openEx === i}">
-          <span class="tile num">${i + 1}</span><span class="grow"><div class="t">${name}</div><div class="small muted">${CIRCUIT_REPS[i]}</div></span>${icon('chev').replace('class="i"', 'class="i chev"')}
+          <span class="n num">${i + 1}</span><span class="grow"><div class="t">${name}</div><div class="small muted">${CIRCUIT_REPS[i]}</div></span>${icon('chev').replace('class="i"', 'class="i chev"')}
         </button>
         <button class="${ticks.has(id) ? 'done' : ''} ${popId === id ? 'pop' : ''}" data-act="tick" data-id="${id}" aria-label="${name}">${check}</button>
       </div>
@@ -309,62 +274,31 @@ function circuitPage() {
         <div class="links"><span class="small muted">${tip}</span><a href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener noreferrer">${t('video')} ↗</a></div>
       </div></div></div>
     </div>`;
-  }).join('')}
-  ${round < 3 && inRound(round) === 5 && rest === 0 ? `<button class="btn" style="margin-top:4px" data-act="rest">${t('restBtn', { n: round + 1 })}</button>` : ''}
-  ${isDay && round === 3 ? `<button class="btn" style="margin-top:4px" data-act="logcircuit" ${all && !logged ? '' : 'disabled'}>${logged ? t('circuitDone') : t('logCircuit')}</button>` : ''}`;
-}
-
-function foodPage() {
-  setHue(today());
-  const slice = (d, c, cls) => `<path d="${d}" class="sl ${cls}" style="fill:${c}"/>`;
-  const label = (x, y, txt) => `<text x="${x}" y="${y}" text-anchor="middle">${txt}</text>`;
-  const soft = (c) => c.replace(')', ' / .45)');
-  const portionCol = [C.red, C.green, C.amber, C.orange];
-  return `<div class="bar-top"><div class="grow"><h1>${t('food')}</h1><div class="muted">${t('foodSub')}</div></div></div>
-  <div class="card" style="padding:16px 8px 8px">
-    <svg class="plate" viewBox="0 0 220 210" role="img" aria-label="${t('plateT')}">
-      <circle cx="100" cy="105" r="96" class="rim"/>
-      ${slice('M100,105 L100,19 A86,86 0 0 1 100,191 Z', soft(C.green), 's1')}
-      ${slice('M100,105 L14,105 A86,86 0 0 1 100,19 Z', soft(C.red), 's2')}
-      ${slice('M100,105 L100,191 A86,86 0 0 1 14,105 Z', soft(C.amber), 's3')}
-      <circle cx="190" cy="34" r="17" class="sl s4" style="fill:${soft(C.orange)}"/>
-      ${label(146, 110, t('veg'))}${label(62, 76, t('protein'))}${label(62, 146, t('carbs'))}${label(190, 66, t('fat'))}
-    </svg>
-  </div>
-  <div class="section"><h2>${t('plateT')}</h2></div>
-  ${L().portions.map(([h, name, size, ex], i) => `<div class="card habit-card"><span class="habit">
-      <span class="tile" style="font-size:22px;box-shadow:inset 0 0 0 3px ${soft(portionCol[i])}">${h}</span>
-      <span class="grow"><div class="t">${name} <span class="muted" style="font-weight:600">· ${size}</span></div><div class="s">${ex}</div></span></span></div>`).join('')}
-  <div class="card note" style="padding:12px">${tile('bulb', C.amber)}<div><div class="eyebrow">${t('orderT')}</div><div style="margin-top:2px">${t('orderB')}</div></div></div>
-  <div class="section"><h2>${t('menuT')}</h2></div>
-  <p class="muted" style="margin:-4px 4px 12px">${t('menuB')}</p>
-  <div class="card list">${L().meals.map(([meal, opts], i) => `<div class="row" style="align-items:flex-start">
-      ${tile(['alarm', 'plate', 'moon'][i], [C.amber, C.green, C.indigo][i])}
-      <span class="grow"><div class="eyebrow" style="margin-bottom:4px">${meal}</div>${opts.map((o) => `<div class="t" style="margin-bottom:3px">${o}</div>`).join('')}</span></div>`).join('')}</div>
-  ${L().extras.map(([, h, b], i) => `<div class="card note" style="padding:12px">${tile(['drop', 'moon', 'bag', 'warn'][i], [C.blue, C.indigo, C.green, C.red][i])}
-      <div><div class="t" style="font-weight:800">${h}</div><div class="small muted" style="margin-top:2px">${b}</div></div></div>`).join('')}`;
+  }).join('')}</div>
+  ${round < 3 && inRound(round) === 5 && rest === 0 ? `<button class="btn" style="margin-top:14px" data-act="rest">${t('restBtn', { n: round + 1 })}</button>` : ''}
+  ${isDay && round === 3 ? `<button class="btn" style="margin-top:14px" data-act="logcircuit" ${all && !logged ? '' : 'disabled'}>${logged ? t('circuitDone') : t('logCircuit')}</button>` : ''}`;
 }
 
 function measurePage() {
   const td = today(), h = S.height || 170;
-  const entries = WAIST_DAYS.filter((x) => S.waist[x] != null).map((x) => S.waist[x]);
-  const last = entries[entries.length - 1], first = S.waist[1], ratio = last != null ? last / h : null;
+  const last = [...WAIST_DAYS].reverse().map((x) => S.waist[x]).find((x) => x != null);
+  const first = S.waist[1], ratio = last != null ? last / h : null;
   setHue(td);
   return `<div class="bar-top"><div class="grow"><h1>${t('measure')}</h1><div class="muted">${t('measureSub')}</div></div></div>
-  <div class="card">${metric('ruler', C.pink, t('now'), last != null ? num(last) : '–', 'cm', entries.length ? spark(entries, C.pink) : '',
-    `<div class="small" style="color:${ratio == null ? 'var(--muted)' : ratio < .5 ? 'var(--good)' : 'var(--warn)'}">${ratio == null ? t('ratioNone') : ratio < .5 ? t('ratioGood') : t('ratioHigh', { n: Math.round(h / 2) })}</div>`)}</div>
-  <div class="pair">
-    <div class="card mini">${metric('flame', C.orange, t('start'), first != null ? num(first) : '–', 'cm')}</div>
-    <div class="card mini">${metric('check', C.green, t('target'), Math.round(h / 2), 'cm')}</div>
+  <div class="panel trio">
+    <div><div class="eyebrow">${t('start')}</div><div class="num">${first != null ? num(first) : '–'}<small> cm</small></div></div>
+    <div><div class="eyebrow">${t('target')}</div><div class="num">${Math.round(h / 2)}<small> cm</small></div></div>
+    <div><div class="eyebrow">${t('now')}</div><div class="num" style="color:${ratio == null ? 'inherit' : ratio < .5 ? 'var(--good)' : 'var(--warn)'}">${last != null ? num(last) : '–'}<small> cm</small></div></div>
   </div>
-  ${first != null && last != null && last !== first ? `<p style="margin:12px 6px 0;font-weight:800;color:${last < first ? 'var(--good)' : 'var(--warn)'}">${t('fromDay1', { s: last < first ? '−' : '+', n: num(Math.abs(last - first)) })}</p>` : ''}
+  <p style="margin:12px 4px 0">${ratio == null ? t('ratioNone') : ratio < .5 ? t('ratioGood') : t('ratioHigh', { n: Math.round(h / 2) })}
+    ${first != null && last != null && last !== first ? `<b style="color:${last < first ? 'var(--good)' : 'var(--warn)'}">${t('fromDay1', { s: last < first ? '−' : '+', n: num(Math.abs(last - first)) })}</b>` : ''}</p>
   <div class="section"><h2>${t('entries')}</h2></div>
-  <div class="card list">${WAIST_DAYS.map((x, i) => `<button class="row" data-act="waist" data-id="${x}" ${x <= td ? '' : 'disabled'}>
-      <span class="tile num" style="width:44px;height:44px;border-radius:15px;color:${PAL[i]}">${x}</span>
+  <div class="panel">${WAIST_DAYS.map((x) => `<button class="row" data-act="waist" data-id="${x}" ${x <= td ? '' : 'disabled'}>
+      <span class="num" style="width:28px;color:var(--strong)">${x}</span>
       <span class="grow"><div class="t">${t('day')} ${x}</div><div class="s">${S.waist[x] != null ? num(S.waist[x]) + ' cm' : x <= td ? t('tapToAdd') : dstr(dateOf(x), { day: 'numeric', month: 'short' })}</div></span>${icon('chev')}</button>`).join('')}</div>
-  <p class="small muted" style="margin:-2px 6px 0">${t('howTo')}</p>
+  <p class="small muted" style="margin:10px 4px 0">${t('howTo')}</p>
   <div class="section"><h2>${t('settings')}</h2></div>
-  <div class="card list">
+  <div class="panel">
     <button class="row" data-act="height"><span class="grow"><div class="t">${t('height')}</div><div class="s">${Math.round(h)} cm</div></span>${icon('chev')}</button>
     <label class="row"><span class="grow"><div class="t">${t('language')}</div></span>
       <select id="langSel">${Object.entries(LANGS).map(([k, v]) => `<option value="${k}" ${k === S.lang ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
@@ -376,30 +310,63 @@ function measurePage() {
 
 function progressPage() {
   const td = today();
-  const days = Array.from({ length: td }, (_, i) => i + 1);
   const vals = Array.from({ length: TOTAL }, (_, i) => (i + 1 <= td ? progress(i + 1) : 0));
   const avg = vals.slice(0, td).reduce((a, b) => a + b, 0) / td;
   const full = vals.filter((v) => v >= 1).length;
   const totSteps = Object.values(S.steps).reduce((a, b) => a + b, 0);
   setHue(td);
-  return `<div class="bar-top"><div class="grow"><h1>${t('progress')}</h1><div class="muted">${t('progressT').replace('<br>', ' ')}</div></div></div>
-  <div class="card" style="padding:16px 14px 12px">
-    <div class="eyebrow">${t('spectrum')}</div>
-    <div class="bars">${vals.map((v, i) => `<div class="b ${i + 1 > td ? 'future' : ''} ${i + 1 === td ? 'sel' : ''}" style="--dh:${hueOf(i + 1)}" data-h="${Math.max(v * 100, 3)}%"></div>`).join('')}
+  return `<div style="text-align:center;padding-top:8px"><div class="eyebrow">${t('progress')}</div>
+    <h1 class="serif" style="font-size:30px;margin-top:8px">${t('progressT')}</h1></div>
+  <div class="panel chart">
+    <div class="eyebrow" style="margin-bottom:12px">${t('spectrum')}</div>
+    <div class="bars">${vals.map((v, i) => `<div class="b ${i + 1 > td ? 'future' : ''} ${i + 1 === td ? 'sel' : ''}" style="--dcol:${dayColor(i + 1)}" data-h="${Math.max(v * 100, 3)}%"></div>`).join('')}
       <div class="avg" data-b="${avg * 100}%"><b>⌀ ${Math.round(avg * 100)}%</b></div></div>
     <div class="xl">${vals.map((_, i) => `<span class="${i + 1 === td ? 'on' : ''}">${i + 1}</span>`).join('')}</div>
   </div>
-  <div class="card">${metric('shoe', C.red, t('totalSteps'), counter('ts', totSteps), t('stepsUnit'), spark(days.map((n) => S.steps[n] ?? 0), C.red))}</div>
-  <div class="card">${metric('check', C.purple, t('complete'), `${full}<span class="muted" style="font-size:20px">/${TOTAL}</span>`, '', spark(days.map(progress), C.purple))}</div>
-  <div class="card">${metric('flame', C.orange, t('streak'), counter('sk', streak()), streak() === 1 ? t('dayWord') : t('daysWord'), spark(days.map((n) => (progress(n) >= 1 ? 1 : 0)), C.orange))}</div>
-  <p class="muted" style="text-align:center;font-style:italic;margin-top:22px;font-family:ui-serif,Georgia,serif;font-size:17px">${t('quote')}</p>`;
+  <div class="panel trio">
+    <div><div class="eyebrow">${t('streak')}</div><div class="num">${counter('sk', streak())}</div></div>
+    <div><div class="eyebrow">${t('complete')}</div><div class="num">${full}<small>/${TOTAL}</small></div></div>
+    <div><div class="eyebrow">${t('totalSteps')}</div><div class="num" style="font-size:20px">${counter('ts', totSteps)}</div></div>
+  </div>
+  <p class="serif muted" style="text-align:center;font-style:italic;margin-top:26px;font-size:17px">${t('quote')}</p>`;
+}
+
+function foodPage() {
+  const td = today();
+  setHue(td);
+  const slice = (d, hue, cls) => `<path d="${d}" class="sl ${cls}" style="fill:oklch(0.86 0.09 ${hue})"/>`;
+  const label = (x, y, txt) => `<text x="${x}" y="${y}" text-anchor="middle">${txt}</text>`;
+  return `<div class="bar-top"><div class="grow"><h1>${t('food')}</h1><div class="muted">${t('foodSub')}</div></div></div>
+  <div class="plate-wrap">
+    <svg class="plate" viewBox="0 0 220 210" role="img" aria-label="${t('plateT')}">
+      <circle cx="100" cy="105" r="96" class="rim"/>
+      ${slice('M100,105 L100,19 A86,86 0 0 1 100,191 Z', 140, 's1')}
+      ${slice('M100,105 L14,105 A86,86 0 0 1 100,19 Z', 30, 's2')}
+      ${slice('M100,105 L100,191 A86,86 0 0 1 14,105 Z', 80, 's3')}
+      <circle cx="190" cy="34" r="17" class="sl s4" style="fill:oklch(0.88 0.1 100)"/>
+      ${label(146, 110, t('veg'))}${label(62, 76, t('protein'))}${label(62, 146, t('carbs'))}${label(190, 66, t('fat'))}
+    </svg>
+  </div>
+  <div class="section"><h2>${t('plateT')}</h2></div>
+  <div>${L().portions.map(([h, name, size, ex]) => `<div class="habit" style="cursor:default">
+      <span class="em" style="font-size:18px">${h}</span>
+      <span class="grow"><div class="t">${name} <span class="muted" style="font-weight:500">· ${size}</span></div><div class="s">${ex}</div></span></div>`).join('')}</div>
+  <div class="note"><span class="q">“</span><div><div class="eyebrow">${t('orderT')}</div><p>${t('orderB')}</p></div></div>
+  <div class="section"><h2>${t('menuT')}</h2></div>
+  <p class="muted" style="margin:0 2px 12px">${t('menuB')}</p>
+  <div class="panel">${L().meals.map(([meal, opts]) => `<div class="row" style="align-items:flex-start">
+      <span class="eyebrow" style="width:84px;padding-top:2px">${meal}</span>
+      <span class="grow">${opts.map((o) => `<div class="t" style="margin-bottom:4px">${o}</div>`).join('')}</span></div>`).join('')}</div>
+  <div class="tips2">${L().extras.map(([e, h, b]) => `<div><span style="font-size:22px">${e}</span><div class="t">${h}</div><p>${b}</p></div>`).join('')}</div>`;
 }
 
 const sub = (title, body) => `<div class="bar-top"><button class="icon-btn" data-act="tab" data-id="measure" aria-label="${t('back')}">${icon('back')}</button><h1 class="grow" style="font-size:22px">${title}</h1></div>${body}`;
 const PAGES = {
   today: todayPage, food: foodPage, circuit: circuitPage, measure: measurePage, progress: progressPage,
-  guide: () => sub(t('guideT'), `<div class="card guide" style="padding:16px">${t('guide')}</div>`),
-  install: () => sub(t('install'), `<div class="card slide play" style="padding:18px">${phoneArt()}<h1 style="font-size:26px">${L().t4[0]}</h1><p class="lead muted">${L().t4[1]}</p>${installBlock()}</div>`),
+  guide: () => sub(t('guideT'), `<div class="guide">${t('guide')}</div>`),
+  install: () => sub(t('install'), `<div class="tour" style="position:static;border-radius:28px;margin-top:12px;padding:20px"><div class="slide play" style="padding:0">
+      <div class="art" style="height:240px"><div class="phone"><span class="tile"></span><div class="bar"><span></span><span class="share">${icon('share')}</span><span></span></div></div></div>
+      <h1 style="font-size:28px">${L().t4[0]}</h1><p class="lead">${L().t4[1]}</p>${installBlock(true)}</div></div>`),
 };
 const NAV = [['today', 'home'], ['food', 'food'], ['circuit', 'dumbbell'], ['measure', 'ruler'], ['progress', 'chart']];
 
@@ -416,8 +383,6 @@ function render() {
   nav.innerHTML = NAV.map(([id, ic]) => `<button class="${id === navOn ? 'on' : ''}" data-tab="${id}" aria-label="${id}">${icon(ic)}</button>`).join('');
   popId = null;
   afterRender();
-  const sel = document.querySelector('.days .sel');
-  if (sel) sel.parentElement.scrollLeft = sel.offsetLeft - innerWidth / 2 + sel.offsetWidth / 2;
 }
 
 // ── Azioni ─────────────────────────────────────────────────
