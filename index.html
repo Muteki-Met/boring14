@@ -27,7 +27,7 @@
   --tint:oklch(0.955 0.035 var(--h));
   --line:oklch(0.915 0.014 var(--h));
   --ink:oklch(0.23 0.03 var(--h));
-  --muted:oklch(0.52 0.025 var(--h));
+  --muted:oklch(0.46 0.025 var(--h));
   --day:oklch(var(--dl) var(--dc) var(--h));
   --strong:oklch(0.56 0.17 var(--h));
   --on-day:oklch(0.24 0.07 var(--h));
@@ -47,7 +47,7 @@ button:focus{outline:none}
 button:focus-visible,select:focus-visible{outline:2px solid var(--strong);outline-offset:2px}
 main{padding:calc(env(safe-area-inset-top) + 12px) 20px calc(env(safe-area-inset-bottom) + 112px);max-width:520px;margin:0 auto}
 .muted{color:var(--muted)}
-.small{font-size:13px}
+.small{font-size:13.5px}
 .grow{flex:1;min-width:0}
 .num{font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 h1{font-size:28px;font-weight:750;letter-spacing:-.02em;margin:0;line-height:1.1}
@@ -56,7 +56,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .enter > *{animation:rise .6s var(--ease) both}
 .enter > *:nth-child(2){animation-delay:.04s}.enter > *:nth-child(3){animation-delay:.08s}
 .enter > *:nth-child(4){animation-delay:.12s}.enter > *:nth-child(n+5){animation-delay:.16s}
-@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+@keyframes rise{from{transform:translateY(12px)}}
 
 .bar-top{display:flex;align-items:center;gap:12px;min-height:46px}
 .icon-btn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);flex:none}
@@ -86,7 +86,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .chip{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:40px;background:var(--surface);border:1px solid var(--line);font-weight:650;font-size:14px}
 .chip.solid{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 
-.section{display:flex;align-items:baseline;margin:26px 2px 6px}
+.section{display:flex;align-items:baseline;margin:34px 2px 10px}
 .section h2{font-size:20px;font-weight:750;margin:0;letter-spacing:-.01em}
 .section span{margin-left:auto}
 
@@ -95,12 +95,12 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .habit:last-child{border-bottom:0}
 .habit .em{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:21px;background:var(--tint);flex:none;transition:background .4s var(--ease)}
 .habit .t{font-weight:650;transition:color .3s}
-.habit .s{font-size:13px;color:var(--muted);margin-top:1px}
+.habit .s{font-size:13.5px;color:var(--muted);margin-top:2px;line-height:1.35}
 .ck{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex:none;transition:background .35s var(--ease),border-color .35s}
 .ck svg{width:16px;height:16px;stroke:var(--paper);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset .4s var(--ease) .05s}
 .done .ck{background:var(--strong);border-color:var(--strong)}
 .done .ck svg{stroke-dashoffset:0}
-.habit.done .t{color:var(--muted)}
+.habit.done .t{color:var(--ink);opacity:.62}
 .habit.done .em{background:var(--day)}
 .pop .ck{animation:pop .5s var(--ease)}
 @keyframes pop{from{transform:scale(.6)}}
@@ -115,7 +115,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .row:last-child{border-bottom:0}
 .row:disabled{opacity:.5}
 .row .t{font-weight:650}
-.row .s{font-size:13px;color:var(--muted)}
+.row .s{font-size:13.5px;color:var(--muted);margin-top:2px}
 .row select{appearance:none;-webkit-appearance:none;border:0;background:var(--tint);padding:8px 12px;border-radius:12px;font-weight:650}
 .trio{display:grid;grid-template-columns:repeat(3,1fr);margin-top:14px}
 .trio > div{padding:16px 14px}
@@ -164,7 +164,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .tips2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
 .tips2 > div{background:var(--tint);border-radius:20px;padding:14px}
 .tips2 .t{font-weight:700;margin-top:6px}
-.tips2 p{margin:4px 0 0;font-size:13px;color:var(--muted)}
+.tips2 p{margin:6px 0 0;font-size:14px;line-height:1.4;color:var(--ink);opacity:.75}
 
 /* progressi */
 .chart{padding:18px 14px 12px;margin-top:16px}
@@ -205,16 +205,17 @@ nav button.on{background:var(--day);color:var(--on-day);opacity:1}
 .dots i{width:7px;height:7px;border-radius:7px;background:oklch(0.25 0.06 var(--h) / .25);transition:width .5s var(--ease),background .5s}
 .dots i.on{width:22px;background:var(--on-day)}
 .tour .btn{background:var(--on-day);color:var(--day)}
-.tour input,.tour .opt{background:oklch(1 0 0 / .55);border:0}
+.tour input,.tour .opt{background:oklch(1 0 0 / .7);border:0;color:var(--on-day)}
+.tour .btn:disabled{opacity:.45}
 /* art 1: 14 cerchi colorati in orbita */
 .orbit{position:relative;width:220px;height:220px}
-.orbit i{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px;border-radius:50%;background:var(--dcol);transform:rotate(var(--a)) translateY(-96px) scale(0);animation:orb .9s var(--ease) forwards;animation-delay:calc(var(--i) * 60ms)}
+.orbit i{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px;border-radius:50%;background:var(--dcol);border:3px solid oklch(1 0 0 / .85);transform:rotate(var(--a)) translateY(-96px) scale(0);animation:orb .9s var(--ease) forwards;animation-delay:calc(var(--i) * 60ms)}
 @keyframes orb{to{transform:rotate(var(--a)) translateY(-96px) scale(1)}}
 .orbit .num{position:absolute;inset:0;display:grid;place-items:center;font-size:96px}
 /* art 2: abitudini che salgono */
 .stack{display:flex;flex-direction:column;gap:8px;width:250px}
-.stack div{display:flex;align-items:center;gap:10px;background:oklch(1 0 0 / .55);border-radius:16px;padding:9px 12px;font-weight:650;font-size:14px;opacity:0;transform:translateY(16px);animation:rise2 .7s var(--ease) forwards;animation-delay:calc(var(--i) * 90ms + .1s)}
-@keyframes rise2{to{opacity:1;transform:none}}
+.stack div{display:flex;align-items:center;gap:10px;background:oklch(1 0 0 / .7);border-radius:16px;padding:9px 12px;font-weight:650;font-size:14px;transform:translateY(16px);animation:rise2 .7s var(--ease) forwards;animation-delay:calc(var(--i) * 90ms + .1s)}
+@keyframes rise2{to{transform:none}}
 /* art 3: lucchetto disegnato */
 .lock path,.lock rect{fill:none;stroke:var(--on-day);stroke-width:7;stroke-linecap:round;stroke-dasharray:400;stroke-dashoffset:400;animation:draw 1.4s var(--ease) forwards}
 .lock rect{animation-delay:.2s}
@@ -239,6 +240,7 @@ nav button.on{background:var(--day);color:var(--on-day);opacity:1}
 
 input{width:100%;font-size:22px;font-weight:700;background:var(--tint);border:1px solid var(--line);border-radius:18px;padding:14px 16px;outline:none;color:var(--ink)}
 input:focus{box-shadow:0 0 0 2px var(--strong)}
+input.date-mini[type=date]{width:auto;font-size:15px;min-height:0;padding:8px 10px;border-radius:12px;font-weight:600}
 input[type=date]{font-size:17px;min-height:52px}
 
 dialog{border:0;border-radius:28px;background:var(--surface);color:var(--ink);width:min(92vw,400px);padding:22px}

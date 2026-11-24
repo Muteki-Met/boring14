@@ -22,7 +22,7 @@ const ids = (d) => habitsFor(d).map((h) => h.id);
 assert.ok(ids(1).includes('waist') && !ids(1).includes('plate'));
 assert.ok(ids(3).includes('plate') && ids(3).includes('circuit'));
 assert.ok(!ids(4).includes('circuit'));
-assert.equal(hueOf(1), 30); assert.equal(DAY_COLORS.length, 14); assert.match(dayColor(3, -0.2), /^oklch\(0\.670 /);
+assert.equal(hueOf(1), 30); assert.equal(DAY_COLORS.length, 14); assert.match(dayColor(3, -0.2), /^oklch\(0\.720 /);
 
 // ogni lingua ha le stesse chiavi dell'inglese
 for (const [l, o] of Object.entries(STR)) for (const k of Object.keys(STR.en)) assert.ok(k in o, `${l} manca ${k}`);

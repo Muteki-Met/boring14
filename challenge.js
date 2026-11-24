@@ -39,24 +39,24 @@ export function stepTarget(day, steps) {
 
 /** Palette dei 14 giorni, scelta a mano: [luminosità, intensità, tinta] OKLCH. */
 export const DAY_COLORS = [
-  [0.74, 0.17, 30],  // corallo
-  [0.78, 0.16, 55],  // mandarino
-  [0.87, 0.16, 92],  // girasole
-  [0.86, 0.18, 130], // lime
-  [0.82, 0.14, 165], // menta
-  [0.81, 0.12, 205], // acqua
-  [0.74, 0.14, 245], // cielo
-  [0.73, 0.15, 278], // pervinca
-  [0.71, 0.18, 302], // viola
-  [0.75, 0.18, 328], // orchidea
-  [0.77, 0.16, 352], // rosa
-  [0.72, 0.18, 15],  // rosso rosa
-  [0.83, 0.11, 48],  // pesca
-  [0.85, 0.15, 85],  // oro, traguardo
+  [0.85, 0.09, 30],  // corallo
+  [0.87, 0.09, 60],  // albicocca
+  [0.92, 0.09, 95],  // burro
+  [0.9, 0.09, 130],  // pistacchio
+  [0.88, 0.08, 165], // menta
+  [0.88, 0.07, 205], // acqua
+  [0.85, 0.08, 245], // cielo
+  [0.84, 0.08, 278], // pervinca
+  [0.84, 0.09, 305], // lavanda
+  [0.85, 0.09, 330], // orchidea
+  [0.86, 0.08, 355], // rosa
+  [0.84, 0.09, 15],  // rosa antico
+  [0.88, 0.07, 50],  // pesca
+  [0.89, 0.1, 85],   // oro, traguardo
 ];
 export const hueOf = (day) => DAY_COLORS[day - 1][2];
 /** Colore del giorno; dl scurisce (negativo) o schiarisce. */
-export const dayColor = (day, dl = 0) => { const [l, ch, h] = DAY_COLORS[day - 1]; return `oklch(${(l + dl).toFixed(3)} ${ch} ${h})`; };
+export const dayColor = (day, dl = 0, dc = 0) => { const [l, ch, h] = DAY_COLORS[day - 1]; return `oklch(${(l + dl).toFixed(3)} ${(ch + dc).toFixed(3)} ${h})`; };
 
 export const CIRCUIT_REPS = ['12–20', '6–15', '8–12', '10–15', '20–40 s'];
 

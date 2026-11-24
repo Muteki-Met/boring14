@@ -48,6 +48,7 @@ const I = {
   chart: '<path d="M5 20v-7M10 20V5M15 20v-10M20 20v-4"/>',
   watch: '<rect x="6.5" y="6" width="11" height="12" rx="3.5"/><path d="M9 6l.8-3h4.4L15 6M9 18l.8 3h4.4l.8-3M12 10v2.5l1.5 1"/>',
   food: '<path d="M7 3v7a2 2 0 0 0 2 2v9M11 3v7a2 2 0 0 1-2 2M7 3v4M17 21V3c-2 1.5-3 4-3 7v3h3"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
   chev: '<path d="m9 6 6 6-6 6"/>', back: '<path d="m15 6-6 6 6 6"/>',
   sync: '<path d="M20 11a8 8 0 0 0-14.9-3M4 13a8 8 0 0 0 14.9 3M4 4v4h4M20 20v-4h-4"/>',
   pen: '<path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/>',
@@ -75,7 +76,7 @@ function confetti() {
   c.width = innerWidth * dpr; c.height = innerHeight * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0);
   const P = Array.from({ length: 150 }, (_, i) => ({
     x: innerWidth / 2, y: innerHeight / 3, vx: (Math.random() - .5) * 14, vy: Math.random() * -14 - 4,
-    r: Math.random() * 7 + 5, a: Math.random() * 6, va: (Math.random() - .5) * .4, c: dayColor(1 + (i % TOTAL)),
+    r: Math.random() * 7 + 5, a: Math.random() * 6, va: (Math.random() - .5) * .4, c: dayColor(1 + (i % TOTAL), -0.1, 0.06),
   }));
   let f = 0;
   (function tick() {
@@ -138,7 +139,7 @@ function installBlock(onDay) {
 
 const tourSlides = () => {
   const s = [
-    `<div class="art"><div class="orbit">${Array.from({ length: TOTAL }, (_, i) => `<i style="--i:${i};--a:${i * (360 / TOTAL)}deg;--dcol:${dayColor(i + 1)}"></i>`).join('')}<span class="num">14</span></div></div>
+    `<div class="art"><div class="orbit">${Array.from({ length: TOTAL }, (_, i) => `<i style="--i:${i};--a:${i * (360 / TOTAL)}deg;--dcol:${dayColor(i + 1, -0.25, 0.06)}"></i>`).join('')}<span class="num">14</span></div></div>
      <h1>${L().t1[0]}</h1><p class="lead">${L().t1[1]}</p>`,
     `<div class="art"><div class="stack">${HABITS.filter((h) => h.id !== 'waist').map((h, i) => `<div style="--i:${i}"><span>${h.emoji}</span>${L().habits[h.id][0]}</div>`).join('')}</div></div>
      <h1>${L().t2[0]}</h1><p class="lead">${L().t2[1]}</p>`,
@@ -215,12 +216,13 @@ function todayPage() {
   const cheer = L().cheer[p >= 1 ? 3 : p >= .6 ? 2 : p > 0 ? 1 : 0];
   const journey = Array.from({ length: TOTAL }, (_, i) => {
     const n = i + 1, pp = n <= td ? progress(n) : 0;
-    return `<button class="${n === d ? 'sel' : ''} ${n > td ? 'future' : ''}" data-act="day" data-id="${n}" ${n > td ? 'disabled' : ''} style="--dcol:${dayColor(n, -0.15)}" aria-label="${t('day')} ${n}"><i data-h="${pp * 100}%" style="height:0"></i></button>`;
+    return `<button class="${n === d ? 'sel' : ''} ${n > td ? 'future' : ''}" data-act="day" data-id="${n}" ${n > td ? 'disabled' : ''} style="--dcol:${dayColor(n, -0.3, 0.05)}" aria-label="${t('day')} ${n}"><i data-h="${pp * 100}%" style="height:0"></i></button>`;
   }).join('');
   const sub = (h) => h.id === 'waist' && S.waist[d] != null ? `${num(S.waist[d])} cm` : L().habits[h.id][1];
   return `<div class="bar-top">
       <div class="grow"><div class="eyebrow">${d === td ? t('today') : t('past')}</div><div style="font-weight:650">${dstr(dateOf(d), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
-      ${isIOS ? `<button class="icon-btn" data-act="guide" aria-label="${t('watch')}">${icon('watch')}</button>` : ''}
+      ${isIOS ? `<button class="icon-btn" data-act="sync" aria-label="${t('sync')}">${icon('watch')}</button>` : ''}
+      <button class="icon-btn" data-act="tab" data-id="settings" aria-label="${t('settings')}">${icon('gear')}</button>
     </div>
     <div class="hero">
       <div class="eyebrow" style="color:inherit;opacity:.65">${t('day')}</div>
@@ -296,16 +298,7 @@ function measurePage() {
   <div class="panel">${WAIST_DAYS.map((x) => `<button class="row" data-act="waist" data-id="${x}" ${x <= td ? '' : 'disabled'}>
       <span class="num" style="width:28px;color:var(--strong)">${x}</span>
       <span class="grow"><div class="t">${t('day')} ${x}</div><div class="s">${S.waist[x] != null ? num(S.waist[x]) + ' cm' : x <= td ? t('tapToAdd') : dstr(dateOf(x), { day: 'numeric', month: 'short' })}</div></span>${icon('chev')}</button>`).join('')}</div>
-  <p class="small muted" style="margin:10px 4px 0">${t('howTo')}</p>
-  <div class="section"><h2>${t('settings')}</h2></div>
-  <div class="panel">
-    <button class="row" data-act="height"><span class="grow"><div class="t">${t('height')}</div><div class="s">${Math.round(h)} cm</div></span>${icon('chev')}</button>
-    <label class="row"><span class="grow"><div class="t">${t('language')}</div></span>
-      <select id="langSel">${Object.entries(LANGS).map(([k, v]) => `<option value="${k}" ${k === S.lang ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
-    <button class="row" data-act="tab" data-id="install"><span class="grow"><div class="t">${t('install')}</div><div class="s">${standalone() ? t('installed') : t('installSub')}</div></span>${icon('chev')}</button>
-    ${isIOS ? `<button class="row" data-act="guide"><span class="grow"><div class="t">${t('watch')}</div><div class="s">${t('watchSub')}</div></span>${icon('chev')}</button>` : ''}
-    <button class="row" data-act="reset"><span class="grow"><div class="t" style="color:var(--warn)">${t('reset')}</div><div class="s">${t('resetSub')}</div></span>${icon('chev')}</button>
-  </div>`;
+  <p class="small muted" style="margin:10px 4px 0">${t('howTo')}</p>`;
 }
 
 function progressPage() {
@@ -319,7 +312,7 @@ function progressPage() {
     <h1 class="serif" style="font-size:30px;margin-top:8px">${t('progressT')}</h1></div>
   <div class="panel chart">
     <div class="eyebrow" style="margin-bottom:12px">${t('spectrum')}</div>
-    <div class="bars">${vals.map((v, i) => `<div class="b ${i + 1 > td ? 'future' : ''} ${i + 1 === td ? 'sel' : ''}" style="--dcol:${dayColor(i + 1)}" data-h="${Math.max(v * 100, 3)}%"></div>`).join('')}
+    <div class="bars">${vals.map((v, i) => `<div class="b ${i + 1 > td ? 'future' : ''} ${i + 1 === td ? 'sel' : ''}" style="--dcol:${dayColor(i + 1, -0.1, 0.05)}" data-h="${Math.max(v * 100, 3)}%"></div>`).join('')}
       <div class="avg" data-b="${avg * 100}%"><b>⌀ ${Math.round(avg * 100)}%</b></div></div>
     <div class="xl">${vals.map((_, i) => `<span class="${i + 1 === td ? 'on' : ''}">${i + 1}</span>`).join('')}</div>
   </div>
@@ -360,9 +353,33 @@ function foodPage() {
   <div class="tips2">${L().extras.map(([e, h, b]) => `<div><span style="font-size:22px">${e}</span><div class="t">${h}</div><p>${b}</p></div>`).join('')}</div>`;
 }
 
-const sub = (title, body) => `<div class="bar-top"><button class="icon-btn" data-act="tab" data-id="measure" aria-label="${t('back')}">${icon('back')}</button><h1 class="grow" style="font-size:22px">${title}</h1></div>${body}`;
+function settingsPage() {
+  setHue(today());
+  const h = S.height || 170, sd = startDate();
+  const ymd = `${sd.getFullYear()}-${String(sd.getMonth() + 1).padStart(2, '0')}-${String(sd.getDate()).padStart(2, '0')}`;
+  return `<div class="bar-top"><button class="icon-btn" data-act="tab" data-id="today" aria-label="${t('back')}">${icon('back')}</button><h1 class="grow">${t('settings')}</h1></div>
+  <div class="section" style="margin-top:12px"><h2>${t('language')}</h2></div>
+  <div class="seg">${Object.entries(LANGS).map(([k, v]) => `<button class="${k === S.lang ? 'on' : ''}" data-act="setlang" data-id="${k}">${v}</button>`).join('')}</div>
+  <div class="section"><h2>${t('challenge')}</h2></div>
+  <div class="panel">
+    <button class="row" data-act="height"><span class="grow"><div class="t">${t('height')}</div><div class="s">${Math.round(h)} cm</div></span>${icon('chev')}</button>
+    <label class="row"><span class="grow"><div class="t">${t('startDate')}</div><div class="s">${dstr(sd, { weekday: 'long', day: 'numeric', month: 'long' })}</div></span>
+      <input type="date" id="startSel" value="${ymd}" class="date-mini"></label>
+  </div>
+  <div class="section"><h2>${t('app')}</h2></div>
+  <div class="panel">
+    <button class="row" data-act="tab" data-id="install"><span class="grow"><div class="t">${t('install')}</div><div class="s">${standalone() ? t('installed') : t('installSub')}</div></span>${icon('chev')}</button>
+    ${isIOS ? `<button class="row" data-act="guide"><span class="grow"><div class="t">${t('watch')}</div><div class="s">${t('watchSub')}</div></span>${icon('chev')}</button>` : ''}
+  </div>
+  <div class="section"><h2>${t('privacy')}</h2></div>
+  <p class="muted" style="margin:0 4px">${L().t3[1]}</p>
+  <div style="height:20px"></div>
+  <div class="panel"><button class="row" data-act="reset"><span class="grow"><div class="t" style="color:var(--warn)">${t('reset')}</div><div class="s">${t('resetSub')}</div></span>${icon('chev')}</button></div>`;
+}
+
+const sub = (title, body) => `<div class="bar-top"><button class="icon-btn" data-act="tab" data-id="settings" aria-label="${t('back')}">${icon('back')}</button><h1 class="grow" style="font-size:22px">${title}</h1></div>${body}`;
 const PAGES = {
-  today: todayPage, food: foodPage, circuit: circuitPage, measure: measurePage, progress: progressPage,
+  today: todayPage, settings: settingsPage, food: foodPage, circuit: circuitPage, measure: measurePage, progress: progressPage,
   guide: () => sub(t('guideT'), `<div class="guide">${t('guide')}</div>`),
   install: () => sub(t('install'), `<div class="tour" style="position:static;border-radius:28px;margin-top:12px;padding:20px"><div class="slide play" style="padding:0">
       <div class="art" style="height:240px"><div class="phone"><span class="tile"></span><div class="bar"><span></span><span class="share">${icon('share')}</span><span></span></div></div></div>
@@ -379,7 +396,7 @@ function render() {
   app.className = lastTab !== tab ? 'enter' : '';
   lastTab = tab;
   app.innerHTML = PAGES[tab]();
-  const navOn = ['guide', 'install'].includes(tab) ? 'measure' : tab;
+  const navOn = ['guide', 'install', 'settings'].includes(tab) ? '' : tab;
   nav.innerHTML = NAV.map(([id, ic]) => `<button class="${id === navOn ? 'on' : ''}" data-tab="${id}" aria-label="${id}">${icon(ic)}</button>`).join('');
   popId = null;
   afterRender();
@@ -391,7 +408,7 @@ document.addEventListener('input', (e) => {
   if (e.target.id === 'pick') { pickDate = e.target.value; validateTour(); }
 });
 document.addEventListener('change', (e) => {
-  if (e.target.id === 'langSel') commit(today(), () => { S.lang = e.target.value; });
+  if (e.target.id === 'startSel' && e.target.value) { const [y, m, dd] = e.target.value.split('-').map(Number); commit(1, () => { S.start = new Date(y, m - 1, dd).toISOString(); }); }
 });
 
 let touchX = null;
@@ -409,6 +426,7 @@ document.addEventListener('click', async (ev) => {
   if (!b || b.disabled) return;
   const id = b.dataset.id, td = S.start ? today() : 1, d = viewDay ?? td;
   switch (b.dataset.act) {
+    case 'setlang': return commit(today(), () => { S.lang = id; });
     case 'lang': S.lang = id; localStorage.setItem(KEY, JSON.stringify(S)); return render();
     case 'next': return goSlide(slide + 1);
     case 'choose': startChoice = id; return renderTour();
