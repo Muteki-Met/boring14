@@ -1,6 +1,6 @@
-import { TOTAL, CIRCUIT_DAYS, WAIST_DAYS, HABITS, habitsFor, dayOf, daysUntil, stepTarget, hueOf, dayColor, DAY_COLORS, CIRCUIT_REPS } from './challenge.js';
-import { STR, LANGS, detectLang } from './i18n.js';
-import { figure } from './figures.js';
+import { TOTAL, CIRCUIT_DAYS, WAIST_DAYS, HABITS, habitsFor, dayOf, daysUntil, stepTarget, hueOf, dayColor, DAY_COLORS, CIRCUIT_REPS } from './challenge.js?v=13';
+import { STR, LANGS, detectLang } from './i18n.js?v=13';
+import { figure } from './figures.js?v=13';
 
 // ── Dati: solo localStorage di questo telefono ─────────────
 const KEY = 'boring14';
@@ -485,6 +485,11 @@ document.addEventListener('click', async (ev) => {
 
 // Al ritorno sull'app (anche dopo mezzanotte) ricalcola il giorno.
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.start) render(); });
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+// Quando arriva una versione nuova dell'app, ricarica una volta: mai file vecchi e nuovi insieme.
+if ('serviceWorker' in navigator) {
+  const had = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (had) location.reload(); });
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' });
+}
 history.scrollRestoration = 'manual';
 render();
